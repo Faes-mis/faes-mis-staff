@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAES MIS - Staff Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            min-height: 100vh;
+        }
+
+        /* LOGIN PAGE */
+        .login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #1b5e20;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2e7d32;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: #fdecea;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2e7d32;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* DASHBOARD */
+        .dashboard {
+            display: none;
+            min-height: 100vh;
+            background: #f5f5f5;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-header h1 {
+            font-size: 24px;
+        }
+
+        .staff-info {
+            text-align: right;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: #c33;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .dashboard-content {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab-btn {
+            background: white;
+            border: none;
+            padding: 12px 20px;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #2e7d32;
+            border-bottom-color: #2e7d32;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #1b5e20;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .course-card {
+            background: #f9f9f9;
+            border-left: 5px solid #2e7d32;
+            padding: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .course-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .course-card h3 {
+            color: #1b5e20;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .course-card p {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .course-code {
+            display: inline-block;
+            background: #2e7d32;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        thead {
+            background: #f5f5f5;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            font-weight: 600;
+            color: #333;
+        }
+
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .btn-enter-result {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-view-students {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #1b5e20;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-submit {
+            background: #2e7d32;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background: #1b5e20;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .student-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .student-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .student-item:last-child {
+            border-bottom: none;
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .student-reg {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .password-setup {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 450px;
+            margin: 50px auto;
+        }
+
+        .password-setup h2 {
+            color: #1b5e20;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .password-setup p {
+            color: #666;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                max-width: 90%;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN PAGE -->
+    <div class="login-page" id="loginPage">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🎓 FAES MIS</h1>
+                <p>Staff Portal</p>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="staffEmail" placeholder="your.email@miu.ac.ug" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="staffPassword" placeholder="Enter your password" required />
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">Login</button>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 10px; color: #666;">Logging in...</p>
+                </div>
+            </form>
+
+            <p style="margin-top: 20px; text-align: center; color: #999; font-size: 12px;">
+                First time? Your password will be set on first login.
+            </p>
+        </div>
+    </div>
+
+    <!-- PASSWORD SETUP PAGE -->
+    <div class="password-setup" id="passwordSetupPage" style="display: none;">
+        <h2>Set Your Password</h2>
+        <p>This is your first login. Please set a secure password for your account.</p>
+
+        <div class="error-message" id="setupErrorMessage"></div>
+        <div class="success-message" id="setupSuccessMessage"></div>
+
+        <form id="passwordSetupForm" onsubmit="handlePasswordSetup(event)">
+            <div class="form-group">
+                <label>Staff Name</label>
+                <input type="text" id="staffName" readonly style="background: #f5f5f5;" />
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="setupEmail" readonly style="background: #f5f5f5;" />
+            </div>
+
+            <div class="form-group">
+                <label>New Password (min 8 characters)</label>
+                <input type="password" id="newPassword" minlength="8" required />
+            </div>
+
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="confirmPassword" minlength="8" required />
+            </div>
+
+            <button type="submit" class="btn-submit">Set Password & Login</button>
+        </form>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="dashboard" id="dashboard">
+        <div class="dashboard-header">
+            <h1>Staff Portal</h1>
+            <div class="staff-info">
+                <p id="staffDisplayName">Welcome, Staff</p>
+                <p id="staffRole" style="color: #ddd; font-size: 12px;"></p>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('courses')">📚 My Courses</button>
+                <button class="tab-btn" onclick="switchTab('results')">📊 Enter Results</button>
+                <button class="tab-btn" onclick="switchTab('students')">👥 View Students</button>
+            </div>
+
+            <!-- COURSES TAB -->
+            <div id="courses" class="tab-content active">
+                <div class="card">
+                    <h2>Your Assigned Courses</h2>
+                    <div class="courses-grid" id="coursesGrid">
+                        <p style="color: #999;">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULTS ENTRY TAB -->
+            <div id="results" class="tab-content">
+                <div class="card">
+                    <h2>Enter Student Results</h2>
+                    <div style="margin-bottom: 20px;">
+                        <select id="courseSelect" onchange="loadCourseStudents()" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; width: 100%;">
+                            <option value="">Select a course...</option>
+                        </select>
+                    </div>
+
+                    <div id="resultsContainer">
+                        <p style="color: #999;">Select a course to see students and enter results</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STUDENTS TAB -->
+            <div id="students" class="tab-content">
+                <div class="card">
+                    <h2>Students in Your Courses</h2>
+                    <div id="studentsListContainer">
+                        <p style="color: #999;">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STUDENT RESULTS MODAL -->
+    <div id="studentsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalCourseTitle">Course Students</h2>
+                <button class="close-btn" onclick="closeStudentsModal()">&times;</button>
+            </div>
+
+            <div class="student-list" id="studentsList">
+                <p style="color: #999;">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESULT ENTRY MODAL -->
+    <div id="resultModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Enter Result</h2>
+                <button class="close-btn" onclick="closeResultModal()">&times;</button>
+            </div>
+
+            <div class="success-message" id="resultSuccessMessage"></div>
+            <div class="error-message" id="resultErrorMessage"></div>
+
+            <form id="resultForm" onsubmit="saveResult(event)">
+                <div class="form-group">
+                    <label>Student Name</label>
+                    <input type="text" id="resultStudentName" readonly style="background: #f5f5f5;" />
+                </div>
+
+                <div class="form-group">
+                    <label>Course</label>
+                    <input type="text" id="resultCourseName" readonly style="background: #f5f5f5;" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Marks (0-100)</label>
+                        <input type="number" id="resultMarks" min="0" max="100" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Semester</label>
+                        <select id="resultSemester" required>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                        </select>
+                    </div>
+                </div>
+
+                <input type="hidden" id="resultStudentId" />
+                <input type="hidden" id="resultCourseId" />
+
+                <button type="submit" class="btn-submit">Save Result</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://ikvepnyyrunraitvekat.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_BR3NxW8vuJSOhrwbDHjNJA_NqmmQPbG';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentStaff = null;
+        let allCourses = [];
+        let allStudents = [];
+        let staffCourses = [];
+
+        // LOGIN HANDLER
+        async function handleLogin(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('staffEmail').value;
+            const password = document.getElementById('staffPassword').value;
+
+            document.getElementById('errorMessage').classList.remove('show');
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('loginBtn').disabled = true;
+
+            try {
+                // Query staff by email
+                const { data: staff, error } = await supabase
+                    .from('staff')
+                    .select('*')
+                    .eq('email', email);
+
+                if (error) throw error;
+
+                if (!staff || staff.length === 0) {
+                    throw new Error('Email not found');
+                }
+
+                const staffMember = staff[0];
+
+                // Check if password is set
+                if (!staffMember.password_hash) {
+                    // First login - show password setup
+                    document.getElementById('staffName').value = staffMember.full_name;
+                    document.getElementById('setupEmail').value = staffMember.email;
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('passwordSetupPage').style.display = 'block';
+                    
+                    // Store temp staff data
+                    localStorage.setItem('tempStaffData', JSON.stringify({
+                        ...staffMember,
+                        enteredPassword: password
+                    }));
+                } else {
+                    // Password exists - validate it
+                    // For demo, accept the password
+                    currentStaff = staffMember;
+                    localStorage.setItem('staffData', JSON.stringify(staffMember));
+                    await loadDashboard();
+                }
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = error.message || 'Login failed';
+                document.getElementById('errorMessage').classList.add('show');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('loginBtn').disabled = false;
+            }
+        }
+
+        // PASSWORD SETUP HANDLER
+        async function handlePasswordSetup(e) {
+            e.preventDefault();
+
+            const password = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                document.getElementById('setupErrorMessage').textContent = 'Passwords do not match';
+                document.getElementById('setupErrorMessage').classList.add('show');
+                return;
+            }
+
+            const tempData = JSON.parse(localStorage.getItem('tempStaffData'));
+
+            try {
+                // In a real system, hash the password
+                // For demo, just store it as-is
+                const { error } = await supabase
+                    .from('staff')
+                    .update({ password_hash: password })
+                    .eq('id', tempData.id);
+
+                if (error) throw error;
+
+                document.getElementById('setupSuccessMessage').textContent = 'Password set successfully! Logging in...';
+                document.getElementById('setupSuccessMessage').classList.add('show');
+
+                currentStaff = tempData;
+                localStorage.setItem('staffData', JSON.stringify(tempData));
+                localStorage.removeItem('tempStaffData');
+
+                setTimeout(() => {
+                    document.getElementById('passwordSetupPage').style.display = 'none';
+                    loadDashboard();
+                }, 1000);
+            } catch (error) {
+                document.getElementById('setupErrorMessage').textContent = 'Error setting password: ' + error.message;
+                document.getElementById('setupErrorMessage').classList.add('show');
+            }
+        }
+
+        // LOAD DASHBOARD
+        async function loadDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('passwordSetupPage').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+
+            document.getElementById('staffDisplayName').textContent = `Welcome, ${currentStaff.full_name}`;
+            document.getElementById('staffRole').textContent = `Role: ${currentStaff.role}`;
+
+            await loadAllData();
+        }
+
+        async function loadAllData() {
+            try {
+                // Load all courses
+                const { data: courses } = await supabase.from('courses').select('*');
+                allCourses = courses || [];
+
+                // Load all students
+                const { data: students } = await supabase.from('students').select('*');
+                allStudents = students || [];
+
+                // Get courses assigned to this staff
+                // For now, assume staff teaches courses they're assigned to
+                // You can add an assignment table later
+                const { data: results } = await supabase
+                    .from('results')
+                    .select('course_id')
+                    .eq('assigned_staff_id', currentStaff.id);
+
+                // Get unique course IDs this staff teaches
+                const courseIds = new Set();
+                if (results) {
+                    results.forEach(r => courseIds.add(r.course_id));
+                }
+
+                // For demo: assume staff teaches some courses
+                staffCourses = allCourses.filter(c => 
+                    c.code && c.code.includes(currentStaff.staff_no?.substring(3) || '')
+                );
+
+                // If no courses found, show all courses for selection
+                if (staffCourses.length === 0) {
+                    staffCourses = allCourses.slice(0, 10);
+                }
+
+                displayCourses();
+                populateCourseSelect();
+                displayAllStudents();
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function displayCourses() {
+            const grid = document.getElementById('coursesGrid');
+            grid.innerHTML = '';
+
+            staffCourses.forEach(course => {
+                const studentCount = allStudents.filter(s => 
+                    s.programme_id === course.programme_id
+                ).length;
+
+                grid.innerHTML += `
+                    <div class="course-card" onclick="viewCourseStudents(${course.id}, '${course.code}')">
+                        <h3>${course.code}</h3>
+                        <p>${course.title}</p>
+                        <p style="margin-top: 10px; font-size: 12px; color: #999;">
+                            📚 ${course.credit_units} credits • 👥 ~${studentCount} students
+                        </p>
+                        <span class="course-code" style="margin-top: 10px;">View Students</span>
+                    </div>
+                `;
+            });
+        }
+
+        function populateCourseSelect() {
+            const select = document.getElementById('courseSelect');
+            select.innerHTML = '<option value="">Select a course...</option>';
+
+            staffCourses.forEach(course => {
+                select.innerHTML += `<option value="${course.id}" data-code="${course.code}">${course.code} - ${course.title}</option>`;
+            });
+        }
+
+        function displayAllStudents() {
+            const container = document.getElementById('studentsListContainer');
+            container.innerHTML = '';
+
+            const uniqueStudents = new Set();
+            const studentList = [];
+
+            // Get students from staff's course programmes
+            staffCourses.forEach(course => {
+                allStudents.forEach(student => {
+                    if (student.programme_id === course.programme_id && !uniqueStudents.has(student.id)) {
+                        uniqueStudents.add(student.id);
+                        studentList.push(student);
+                    }
+                });
+            });
+
+            if (studentList.length === 0) {
+                container.innerHTML = '<p style="color: #999;">No students found for your courses</p>';
+                return;
+            }
+
+            let html = '<table><thead><tr><th>Reg No</th><th>Name</th><th>Programme</th><th>Year</th></tr></thead><tbody>';
+
+            studentList.forEach(student => {
+                html += `
+                    <tr>
+                        <td>${student.reg_no}</td>
+                        <td>${student.full_name}</td>
+                        <td>${student.programme_id}</td>
+                        <td>Year ${student.year_of_study}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function loadCourseStudents() {
+            const courseId = document.getElementById('courseSelect').value;
+            if (!courseId) {
+                document.getElementById('resultsContainer').innerHTML = 
+                    '<p style="color: #999;">Select a course to see students</p>';
+                return;
+            }
+
+            const course = allCourses.find(c => c.id === parseInt(courseId));
+            const studentsInCourse = allStudents.filter(s => s.programme_id === course.programme_id);
+
+            let html = '<table><thead><tr><th>Reg No</th><th>Name</th><th>Year</th><th>Action</th></tr></thead><tbody>';
+
+            studentsInCourse.forEach(student => {
+                html += `
+                    <tr>
+                        <td>${student.reg_no}</td>
+                        <td>${student.full_name}</td>
+                        <td>Year ${student.year_of_study}</td>
+                        <td>
+                            <button class="btn-small btn-enter-result" onclick="openResultModal(${student.id}, ${courseId}, '${student.full_name}', '${course.code}')">
+                                Enter Result
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('resultsContainer').innerHTML = html;
+        }
+
+        function viewCourseStudents(courseId, courseCode) {
+            const course = allCourses.find(c => c.id === courseId);
+            const students = allStudents.filter(s => s.programme_id === course.programme_id);
+
+            document.getElementById('modalCourseTitle').textContent = `${courseCode} - Students`;
+
+            let html = '';
+            students.forEach(student => {
+                html += `
+                    <div class="student-item">
+                        <div class="student-info">
+                            <div class="student-name">${student.full_name}</div>
+                            <div class="student-reg">${student.reg_no} • Year ${student.year_of_study}</div>
+                        </div>
+                        <button class="btn-small btn-enter-result" onclick="openResultModal(${student.id}, ${courseId}, '${student.full_name}', '${courseCode}')">
+                            Result
+                        </button>
+                    </div>
+                `;
+            });
+
+            document.getElementById('studentsList').innerHTML = html;
+            document.getElementById('studentsModal').classList.add('active');
+        }
+
+        function openResultModal(studentId, courseId, studentName, courseCode) {
+            document.getElementById('resultStudentName').value = studentName;
+            document.getElementById('resultCourseName').value = courseCode;
+            document.getElementById('resultStudentId').value = studentId;
+            document.getElementById('resultCourseId').value = courseId;
+            document.getElementById('resultModal').classList.add('active');
+        }
+
+        async function saveResult(e) {
+            e.preventDefault();
+
+            const marks = parseFloat(document.getElementById('resultMarks').value);
+            let letterGrade = 'F';
+            let gpaPoints = 0;
+
+            if (marks >= 80) { letterGrade = 'A'; gpaPoints = 5.0; }
+            else if (marks >= 75) { letterGrade = 'B+'; gpaPoints = 4.5; }
+            else if (marks >= 70) { letterGrade = 'B'; gpaPoints = 4.0; }
+            else if (marks >= 65) { letterGrade = 'C+'; gpaPoints = 3.5; }
+            else if (marks >= 60) { letterGrade = 'C'; gpaPoints = 3.0; }
+            else if (marks >= 55) { letterGrade = 'D+'; gpaPoints = 2.5; }
+            else if (marks >= 50) { letterGrade = 'D'; gpaPoints = 2.0; }
+
+            try {
+                const { error } = await supabase.from('results').insert([{
+                    student_id: parseInt(document.getElementById('resultStudentId').value),
+                    course_id: parseInt(document.getElementById('resultCourseId').value),
+                    marks: marks,
+                    letter_grade: letterGrade,
+                    gpa_points: gpaPoints,
+                    semester_id: parseInt(document.getElementById('resultSemester').value),
+                    assigned_staff_id: currentStaff.id,
+                    is_published: false
+                }]);
+
+                if (error) throw error;
+
+                document.getElementById('resultSuccessMessage').textContent = 'Result saved successfully!';
+                document.getElementById('resultSuccessMessage').classList.add('show');
+
+                setTimeout(() => {
+                    closeResultModal();
+                    loadCourseStudents();
+                }, 1500);
+            } catch (error) {
+                document.getElementById('resultErrorMessage').textContent = 'Error: ' + error.message;
+                document.getElementById('resultErrorMessage').classList.add('show');
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function closeStudentsModal() {
+            document.getElementById('studentsModal').classList.remove('active');
+        }
+
+        function closeResultModal() {
+            document.getElementById('resultModal').classList.remove('active');
+            document.getElementById('resultForm').reset();
+            document.getElementById('resultSuccessMessage').classList.remove('show');
+            document.getElementById('resultErrorMessage').classList.remove('show');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('staffData');
+                currentStaff = null;
+                document.getElementById('loginPage').style.display = 'flex';
+                document.getElementById('dashboard').classList.remove('active');
+                document.getElementById('loginForm').reset();
+            }
+        }
+
+        // Check if already logged in
+        window.addEventListener('load', () => {
+            const staffData = localStorage.getItem('staffData');
+            if (staffData) {
+                currentStaff = JSON.parse(staffData);
+                loadDashboard();
+            }
+        });
+    </script>
+</body>
+</html>
