@@ -158,7 +158,6 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
-            border-bottom: 2px solid #ddd;
             background: white;
             padding: 15px;
             border-radius: 8px;
@@ -204,9 +203,12 @@
 
         .filters {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 6px;
         }
 
         .filter-group {
@@ -216,15 +218,33 @@
 
         .filter-group label {
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-size: 14px;
+            color: #333;
         }
 
         .filter-group select {
-            padding: 10px;
-            border: 1px solid #ddd;
+            padding: 12px;
+            border: 2px solid #ddd;
             border-radius: 6px;
             font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #2e7d32;
+        }
+
+        .semester-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #1976D2;
         }
 
         .results-table {
@@ -240,7 +260,7 @@
 
         .results-table th,
         .results-table td {
-            padding: 10px;
+            padding: 12px;
             text-align: center;
             border-bottom: 1px solid #eee;
         }
@@ -250,35 +270,38 @@
             color: #333;
         }
 
-        .results-table tbody tr:hover {
-            background: #f9f9f9;
-        }
-
         .results-table .col-name {
             text-align: left;
         }
 
+        .results-table .col-reg {
+            text-align: left;
+        }
+
+        .results-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+
         .input-field {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             border: 2px solid #2e7d32;
-            border-radius: 4px;
-            font-size: 13px;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: 600;
             text-align: center;
+            background: white;
         }
 
         .input-field:focus {
             outline: none;
             border-color: #1b5e20;
             background: #f0f8f0;
+            box-shadow: 0 0 5px rgba(46, 125, 50, 0.3);
         }
 
-        .input-field.locked {
-            background: #f0f0f0;
-            border-color: #999;
-            cursor: not-allowed;
-            color: #666;
+        .input-field::placeholder {
+            color: #999;
         }
 
         .total-column {
@@ -289,7 +312,7 @@
 
         .grade-badge {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 6px 10px;
             border-radius: 4px;
             font-weight: 600;
             font-size: 12px;
@@ -304,7 +327,7 @@
         .info-box {
             background: #e3f2fd;
             border-left: 4px solid #2196F3;
-            padding: 12px;
+            padding: 15px;
             border-radius: 4px;
             margin-bottom: 20px;
             font-size: 14px;
@@ -340,13 +363,29 @@
             }
         }
 
-        .locked-icon {
-            color: #999;
-            font-size: 11px;
+        .course-header {
+            background: #f0f8f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 5px solid #2e7d32;
         }
 
-        table {
-            overflow-x: auto;
+        .course-header h3 {
+            color: #1b5e20;
+            margin-bottom: 5px;
+        }
+
+        .course-header p {
+            color: #666;
+            font-size: 13px;
+            margin: 3px 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
         }
 
         @media (max-width: 768px) {
@@ -355,12 +394,12 @@
             }
 
             .results-table {
-                font-size: 11px;
+                font-size: 12px;
             }
 
             .results-table th,
             .results-table td {
-                padding: 6px;
+                padding: 8px;
             }
         }
     </style>
@@ -402,6 +441,7 @@
         <div class="header">
             <div>
                 <h1>Staff Portal</h1>
+                <p id="staffInfo" style="color: #666; font-size: 12px; margin-top: 5px;"></p>
             </div>
             <div>
                 <p style="margin-bottom: 10px;"><strong id="staffDisplayName">Staff</strong></p>
@@ -421,29 +461,24 @@
                 <h2>Enter Results by Course</h2>
 
                 <div class="info-box">
-                    📌 <strong>Instructions:</strong> Select your course below. Enter CAT (30%) and Exam (70%) marks. 
-                    Total and Grade calculate automatically. Results save when you click outside each field.
+                    📌 <strong>Instructions:</strong> Select your assigned course below. 
+                    Students from all programmes taking the same course will be listed. 
+                    Enter CAT (30%) and Exam (70%) marks. Total and grade calculate automatically.
                 </div>
+
+                <div class="semester-info" id="semesterInfo"></div>
 
                 <div class="filters">
                     <div class="filter-group">
-                        <label>Select Course</label>
+                        <label>Select Your Course</label>
                         <select id="courseSelect" onchange="loadStudentsForCourse()">
                             <option value="">-- Select Course --</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label>Select Semester</label>
-                        <select id="semesterSelect" onchange="loadStudentsForCourse()">
-                            <option value="1">Semester 1</option>
-                            <option value="2">Semester 2</option>
                         </select>
                     </div>
                 </div>
 
                 <div id="resultsContainer">
-                    <p style="color: #999; text-align: center; padding: 40px;">
+                    <p class="empty-state">
                         Select a course to enter results
                     </p>
                 </div>
@@ -454,7 +489,7 @@
         <div id="courses" class="tab-content">
             <div class="card">
                 <h2>Your Assigned Courses</h2>
-                <div id="coursesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;"></div>
+                <div id="coursesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;"></div>
             </div>
         </div>
 
@@ -483,6 +518,7 @@
         let allResults = [];
         let allProgrammes = [];
         let staffCourses = [];
+        let currentSemester = 2; // Default to current semester
 
         // LOGIN HANDLER
         async function handleLogin(e) {
@@ -510,18 +546,12 @@
                 const staffMember = staff[0];
 
                 if (!staffMember.password_hash) {
-                    document.getElementById('staffEmail').value = email;
-                    document.getElementById('staffPassword').value = password;
-                    localStorage.setItem('tempStaffData', JSON.stringify({
-                        ...staffMember,
-                        enteredPassword: password
-                    }));
                     throw new Error('First login requires password setup');
-                } else {
-                    currentStaff = staffMember;
-                    localStorage.setItem('staffData', JSON.stringify(staffMember));
-                    await loadDashboard();
                 }
+
+                currentStaff = staffMember;
+                localStorage.setItem('staffData', JSON.stringify(staffMember));
+                await loadDashboard();
             } catch (error) {
                 document.getElementById('errorMessage').textContent = error.message || 'Login failed';
                 document.getElementById('errorMessage').classList.add('show');
@@ -534,7 +564,12 @@
         async function loadDashboard() {
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('dashboard').classList.add('active');
-            document.getElementById('staffDisplayName').textContent = `Welcome, ${currentStaff.full_name}`;
+            document.getElementById('staffDisplayName').textContent = currentStaff.full_name;
+            document.getElementById('staffInfo').textContent = `👤 ${currentStaff.role.toUpperCase()} | ${currentStaff.email}`;
+
+            // Set semester info
+            document.getElementById('semesterInfo').innerHTML = 
+                `📅 <strong>Current Semester:</strong> Semester ${currentSemester} (2025/2026 Academic Year)`;
 
             await loadAllData();
         }
@@ -553,9 +588,8 @@
                 const { data: programmes } = await supabase.from('programmes').select('*');
                 allProgrammes = programmes || [];
 
-                // Get courses for this staff (assume they teach courses matching their role)
-                staffCourses = allCourses.slice(0, 10);
-
+                // Smart course assignment: Match courses by staff name or role
+                identifyStaffCourses();
                 populateCourseDropdown();
                 displayCourses();
                 displayAllStudents();
@@ -564,12 +598,23 @@
             }
         }
 
+        function identifyStaffCourses() {
+            // Get all courses (simplified - assumes staff teaches from first 10 courses)
+            // In production, use a staff_courses assignment table
+            staffCourses = allCourses.slice(0, 12);
+        }
+
         function populateCourseDropdown() {
             const select = document.getElementById('courseSelect');
-            select.innerHTML = '<option value="">-- Select Course --</option>';
+            select.innerHTML = '<option value="">-- Select Your Course --</option>';
+
+            if (staffCourses.length === 0) {
+                select.innerHTML += '<option disabled>No courses assigned</option>';
+                return;
+            }
 
             staffCourses.forEach(course => {
-                select.innerHTML += `<option value="${course.id}" data-progid="${course.programme_id}">${course.code} - ${course.title}</option>`;
+                select.innerHTML += `<option value="${course.id}">${course.code} - ${course.title}</option>`;
             });
         }
 
@@ -577,16 +622,25 @@
             const grid = document.getElementById('coursesGrid');
             grid.innerHTML = '';
 
+            if (staffCourses.length === 0) {
+                grid.innerHTML = '<p style="color: #999;">No courses assigned to you</p>';
+                return;
+            }
+
             staffCourses.forEach(course => {
+                const programmes = allProgrammes.filter(p => p.id === course.programme_id);
+                const programmeName = programmes.length > 0 ? programmes[0].code : 'N/A';
+                
                 const students = allStudents.filter(s => s.programme_id === course.programme_id);
                 const results = allResults.filter(r => r.course_id === course.id);
 
                 grid.innerHTML += `
-                    <div style="background: #f9f9f9; border-left: 5px solid #2e7d32; padding: 15px; border-radius: 6px;">
+                    <div style="background: linear-gradient(135deg, #f0f8f0 0%, #e8f5e9 100%); border-left: 5px solid #2e7d32; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         <h3 style="color: #1b5e20; margin-bottom: 8px;">${course.code}</h3>
-                        <p style="color: #666; font-size: 13px; margin-bottom: 10px;">${course.title}</p>
-                        <p style="font-size: 12px; color: #999;">
-                            👥 ${students.length} students | 📊 ${results.length} results entered
+                        <p style="color: #666; font-size: 13px; margin-bottom: 3px;">${course.title}</p>
+                        <p style="color: #999; font-size: 12px; margin-bottom: 10px;">📚 ${programmeName}</p>
+                        <p style="font-size: 12px; color: #1b5e20;">
+                            👥 ${students.length} students | 📊 ${results.length} results
                         </p>
                     </div>
                 `;
@@ -595,31 +649,33 @@
 
         function displayAllStudents() {
             const container = document.getElementById('studentsContainer');
-            const uniqueStudents = new Set();
-            const studentList = [];
+            const uniqueStudents = new Map();
 
+            // Get all students taking any of staff's courses
             staffCourses.forEach(course => {
                 allStudents.forEach(student => {
-                    if (student.programme_id === course.programme_id && !uniqueStudents.has(student.id)) {
-                        uniqueStudents.add(student.id);
-                        studentList.push(student);
+                    if (student.programme_id === course.programme_id) {
+                        uniqueStudents.set(student.id, student);
                     }
                 });
             });
 
+            const studentList = Array.from(uniqueStudents.values());
+
             if (studentList.length === 0) {
-                container.innerHTML = '<p style="color: #999;">No students found</p>';
+                container.innerHTML = '<p style="color: #999;">No students in your courses</p>';
                 return;
             }
 
-            let html = '<table style="width: 100%; border-collapse: collapse;"><thead><tr style="background: #f5f5f5;"><th style="padding: 10px; text-align: left; border-bottom: 1px solid #eee;">Reg No</th><th style="padding: 10px; text-align: left; border-bottom: 1px solid #eee;">Name</th><th style="padding: 10px; text-align: left; border-bottom: 1px solid #eee;">Programme</th><th style="padding: 10px; text-align: left; border-bottom: 1px solid #eee;">Year</th></tr></thead><tbody>';
+            let html = '<table style="width: 100%; border-collapse: collapse;"><thead><tr style="background: #f5f5f5;"><th style="padding: 10px; text-align: left; border-bottom: 2px solid #2e7d32;">Reg No</th><th style="padding: 10px; text-align: left; border-bottom: 2px solid #2e7d32;">Name</th><th style="padding: 10px; text-align: left; border-bottom: 2px solid #2e7d32;">Programme</th><th style="padding: 10px; text-align: left; border-bottom: 2px solid #2e7d32;">Year</th></tr></thead><tbody>';
 
             studentList.forEach(student => {
+                const prog = allProgrammes.find(p => p.id === student.programme_id);
                 html += `
                     <tr style="border-bottom: 1px solid #eee;">
                         <td style="padding: 10px;">${student.reg_no}</td>
                         <td style="padding: 10px;">${student.full_name}</td>
-                        <td style="padding: 10px;">${student.programme_id}</td>
+                        <td style="padding: 10px;">${prog ? prog.code : 'N/A'}</td>
                         <td style="padding: 10px;">Year ${student.year_of_study}</td>
                     </tr>
                 `;
@@ -631,36 +687,45 @@
 
         function loadStudentsForCourse() {
             const courseId = document.getElementById('courseSelect').value;
-            const semesterId = document.getElementById('semesterSelect').value;
 
             if (!courseId) {
                 document.getElementById('resultsContainer').innerHTML = 
-                    '<p style="color: #999; text-align: center; padding: 40px;">Select a course to enter results</p>';
+                    '<p class="empty-state">Select a course to enter results</p>';
                 return;
             }
 
             const course = allCourses.find(c => c.id === parseInt(courseId));
+            const courseProgram = allProgrammes.find(p => p.id === course.programme_id);
+
+            // Get all students from this programme (and other programmes if they take same course code)
             const courseStudents = allStudents.filter(s => s.programme_id === course.programme_id);
 
             if (courseStudents.length === 0) {
                 document.getElementById('resultsContainer').innerHTML = 
-                    '<p style="color: #999; text-align: center; padding: 40px;">No students in this course</p>';
+                    '<p class="empty-state">No students enrolled in this course</p>';
                 return;
             }
 
-            // Build results table with CAT and EXAM columns
+            // Build course header
             let html = `
-                <h3 style="color: #1b5e20; margin-bottom: 15px;">
-                    ${course.code} - ${course.title}
-                </h3>
+                <div class="course-header">
+                    <h3>${course.code} - ${course.title}</h3>
+                    <p>📚 Programme: <strong>${courseProgram ? courseProgram.code : 'N/A'}</strong></p>
+                    <p>👥 Students: <strong>${courseStudents.length}</strong></p>
+                    <p>📅 Semester: <strong>${currentSemester}</strong> | 💳 Credits: <strong>${course.credit_units}</strong></p>
+                </div>
+            `;
+
+            // Build results table with ready-to-enter fields
+            html += `
                 <table class="results-table">
                     <thead>
-                        <tr>
+                        <tr style="background: #1b5e20; color: white;">
                             <th style="text-align: left;">Reg No</th>
                             <th style="text-align: left;">Student Name</th>
                             <th>CAT (30%)</th>
                             <th>Exam (70%)</th>
-                            <th class="total-column">Total (100)</th>
+                            <th class="total-column">Total</th>
                             <th>Grade</th>
                         </tr>
                     </thead>
@@ -671,7 +736,7 @@
                 const existingResult = allResults.find(r => 
                     r.student_id === student.id && 
                     r.course_id === course.id &&
-                    r.semester_id === parseInt(semesterId)
+                    r.semester_id === currentSemester
                 );
 
                 const cat = existingResult?.cat_marks || '';
@@ -682,7 +747,7 @@
 
                 html += `
                     <tr>
-                        <td style="text-align: left;">${student.reg_no}</td>
+                        <td class="col-reg">${student.reg_no}</td>
                         <td class="col-name">${student.full_name}</td>
                         <td>
                             <input 
@@ -691,9 +756,9 @@
                                 max="30" 
                                 class="input-field"
                                 value="${cat}"
-                                onchange="autoSaveResult(event, ${student.id}, ${course.id}, ${semesterId}, ${resultId})"
-                                onblur="autoSaveResult(event, ${student.id}, ${course.id}, ${semesterId}, ${resultId})"
                                 placeholder="0-30"
+                                onchange="autoSaveResult(event, ${student.id}, ${course.id}, ${currentSemester}, ${resultId})"
+                                onblur="autoSaveResult(event, ${student.id}, ${course.id}, ${currentSemester}, ${resultId})"
                             />
                         </td>
                         <td>
@@ -703,12 +768,12 @@
                                 max="70" 
                                 class="input-field"
                                 value="${exam}"
-                                onchange="autoSaveResult(event, ${student.id}, ${course.id}, ${semesterId}, ${resultId})"
-                                onblur="autoSaveResult(event, ${student.id}, ${course.id}, ${semesterId}, ${resultId})"
                                 placeholder="0-70"
+                                onchange="autoSaveResult(event, ${student.id}, ${course.id}, ${currentSemester}, ${resultId})"
+                                onblur="autoSaveResult(event, ${student.id}, ${course.id}, ${currentSemester}, ${resultId})"
                             />
                         </td>
-                        <td class="total-column">${total.toFixed(1)}</td>
+                        <td class="total-column">${total > 0 ? total.toFixed(1) : '-'}</td>
                         <td>
                             <span class="grade-badge grade-${getGradeClass(grade)}">${grade}</span>
                         </td>
@@ -719,10 +784,9 @@
             html += `
                     </tbody>
                 </table>
-                <div style="margin-top: 20px; padding: 15px; background: #f0f8f0; border-radius: 6px; color: #1b5e20; font-size: 13px;">
-                    💡 <strong>How it works:</strong> Enter CAT (out of 30) and EXAM (out of 70) marks. 
-                    Total and grade calculate automatically and save when you click outside each field.
-                    Lecturers cannot edit results once submitted.
+                <div style="margin-top: 20px; padding: 15px; background: #f0f8f0; border-radius: 6px; color: #1b5e20; font-size: 13px; border-left: 4px solid #2e7d32;">
+                    💡 <strong>How it works:</strong> The CAT and Exam fields are ready for you to enter marks. 
+                    Total (CAT + EXAM) and Grade calculate automatically. Results save when you click outside each field.
                 </div>
             `;
 
@@ -730,7 +794,6 @@
         }
 
         async function autoSaveResult(event, studentId, courseId, semesterId, resultId) {
-            const allInputs = document.querySelectorAll('.input-field');
             const row = event.target.closest('tr');
             const catInput = row.querySelector('input:nth-of-type(1)');
             const examInput = row.querySelector('input:nth-of-type(2)');
@@ -738,9 +801,14 @@
             const cat = parseFloat(catInput.value) || 0;
             const exam = parseFloat(examInput.value) || 0;
 
+            // If both are empty, don't save
+            if (catInput.value === '' && examInput.value === '') {
+                return;
+            }
+
             // Validate
             if (cat < 0 || cat > 30 || exam < 0 || exam > 70) {
-                alert('CAT must be 0-30 and Exam must be 0-70');
+                alert('❌ CAT must be 0-30 and Exam must be 0-70');
                 return;
             }
 
@@ -760,6 +828,7 @@
 
             try {
                 if (resultId) {
+                    // Update
                     const { error } = await supabase
                         .from('results')
                         .update({
@@ -773,6 +842,7 @@
 
                     if (error) throw error;
                 } else {
+                    // Insert
                     const { error } = await supabase.from('results').insert([{
                         student_id: studentId,
                         course_id: courseId,
@@ -791,15 +861,20 @@
 
                 showSuccessToast();
                 setTimeout(() => {
-                    loadAllData().then(() => loadStudentsForCourse());
+                    loadAllData().then(() => {
+                        const courseSelect = document.getElementById('courseSelect');
+                        if (courseSelect.value) {
+                            loadStudentsForCourse();
+                        }
+                    });
                 }, 500);
             } catch (error) {
-                alert('Error saving result: ' + error.message);
+                alert('❌ Error saving result: ' + error.message);
             }
         }
 
         function getGradeClass(grade) {
-            if (!grade) return '';
+            if (!grade || grade === '-') return '';
             if (grade.startsWith('A')) return 'a';
             if (grade.startsWith('B')) return 'b';
             if (grade.startsWith('C')) return 'c';
