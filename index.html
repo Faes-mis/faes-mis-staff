@@ -18,7 +18,6 @@
             min-height: 100vh;
         }
 
-        /* LOGIN PAGE */
         .login-page {
             display: flex;
             align-items: center;
@@ -49,7 +48,6 @@
 
         .form-group {
             margin-bottom: 20px;
-            position: relative;
         }
 
         .form-group label {
@@ -98,28 +96,6 @@
             display: block;
         }
 
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #2e7d32;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* DASHBOARD */
         .dashboard {
             display: none;
             padding: 30px;
@@ -203,7 +179,7 @@
 
         .filters {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
             padding: 20px;
@@ -220,16 +196,13 @@
             font-weight: 600;
             margin-bottom: 8px;
             font-size: 14px;
-            color: #333;
         }
 
         .filter-group select {
-            padding: 12px;
+            padding: 10px;
             border: 2px solid #ddd;
             border-radius: 6px;
             font-size: 14px;
-            background: white;
-            cursor: pointer;
         }
 
         .filter-group select:focus {
@@ -237,10 +210,10 @@
             border-color: #2e7d32;
         }
 
-        .semester-info {
+        .info-box {
             background: #e3f2fd;
             border-left: 4px solid #2196F3;
-            padding: 12px;
+            padding: 15px;
             border-radius: 4px;
             margin-bottom: 20px;
             font-size: 14px;
@@ -252,10 +225,12 @@
             border-collapse: collapse;
             margin-top: 15px;
             font-size: 13px;
+            overflow-x: auto;
         }
 
         .results-table thead {
-            background: #f5f5f5;
+            background: #1b5e20;
+            color: white;
         }
 
         .results-table th,
@@ -267,13 +242,9 @@
 
         .results-table th {
             font-weight: 600;
-            color: #333;
         }
 
-        .results-table .col-name {
-            text-align: left;
-        }
-
+        .results-table .col-name,
         .results-table .col-reg {
             text-align: left;
         }
@@ -324,14 +295,23 @@
         .grade-d { background: #f8d7da; color: #721c24; }
         .grade-f { background: #f5c6cb; color: #721c24; }
 
-        .info-box {
-            background: #e3f2fd;
-            border-left: 4px solid #2196F3;
+        .course-header {
+            background: #f0f8f0;
             padding: 15px;
-            border-radius: 4px;
+            border-radius: 6px;
             margin-bottom: 20px;
-            font-size: 14px;
-            color: #1976D2;
+            border-left: 5px solid #2e7d32;
+        }
+
+        .course-header h3 {
+            color: #1b5e20;
+            margin-bottom: 5px;
+        }
+
+        .course-header p {
+            color: #666;
+            font-size: 13px;
+            margin: 3px 0;
         }
 
         .success-toast {
@@ -361,25 +341,6 @@
                 transform: translateX(0);
                 opacity: 1;
             }
-        }
-
-        .course-header {
-            background: #f0f8f0;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            border-left: 5px solid #2e7d32;
-        }
-
-        .course-header h3 {
-            color: #1b5e20;
-            margin-bottom: 5px;
-        }
-
-        .course-header p {
-            color: #666;
-            font-size: 13px;
-            margin: 3px 0;
         }
 
         .empty-state {
@@ -427,11 +388,6 @@
                 </div>
 
                 <button type="submit" class="login-btn" id="loginBtn">Login</button>
-
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    <p style="margin-top: 10px; color: #666;">Logging in...</p>
-                </div>
             </form>
         </div>
     </div>
@@ -461,18 +417,40 @@
                 <h2>Enter Results by Course</h2>
 
                 <div class="info-box">
-                    📌 <strong>Instructions:</strong> Select your assigned course below. 
-                    Students from all programmes taking the same course will be listed. 
-                    Enter CAT (30%) and Exam (70%) marks. Total and grade calculate automatically.
+                    📌 <strong>Instructions:</strong> Select your course. Filter by programme and year if needed. 
+                    Enter CAT (30%) and Exam (70%) marks. Total and grade calculate automatically and save on blur.
                 </div>
-
-                <div class="semester-info" id="semesterInfo"></div>
 
                 <div class="filters">
                     <div class="filter-group">
-                        <label>Select Your Course</label>
+                        <label>Select Course</label>
                         <select id="courseSelect" onchange="loadStudentsForCourse()">
                             <option value="">-- Select Course --</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Filter by Programme</label>
+                        <select id="programmeFilter" onchange="loadStudentsForCourse()">
+                            <option value="">All Programmes</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Filter by Year</label>
+                        <select id="yearFilter" onchange="loadStudentsForCourse()">
+                            <option value="">All Years</option>
+                            <option value="1">Year 1</option>
+                            <option value="2">Year 2</option>
+                            <option value="3">Year 3</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Semester</label>
+                        <select id="semesterSelect" onchange="loadStudentsForCourse()">
+                            <option value="1">Semester 1</option>
+                            <option value="2" selected>Semester 2</option>
                         </select>
                     </div>
                 </div>
@@ -518,9 +496,8 @@
         let allResults = [];
         let allProgrammes = [];
         let staffCourses = [];
-        let currentSemester = 2; // Default to current semester
+        let allStudentsData = [];
 
-        // LOGIN HANDLER
         async function handleLogin(e) {
             e.preventDefault();
 
@@ -528,8 +505,6 @@
             const password = document.getElementById('staffPassword').value;
 
             document.getElementById('errorMessage').classList.remove('show');
-            document.getElementById('loading').classList.add('show');
-            document.getElementById('loginBtn').disabled = true;
 
             try {
                 const { data: staff, error } = await supabase
@@ -553,11 +528,8 @@
                 localStorage.setItem('staffData', JSON.stringify(staffMember));
                 await loadDashboard();
             } catch (error) {
-                document.getElementById('errorMessage').textContent = error.message || 'Login failed';
+                document.getElementById('errorMessage').textContent = error.message;
                 document.getElementById('errorMessage').classList.add('show');
-            } finally {
-                document.getElementById('loading').classList.remove('show');
-                document.getElementById('loginBtn').disabled = false;
             }
         }
 
@@ -566,10 +538,6 @@
             document.getElementById('dashboard').classList.add('active');
             document.getElementById('staffDisplayName').textContent = currentStaff.full_name;
             document.getElementById('staffInfo').textContent = `👤 ${currentStaff.role.toUpperCase()} | ${currentStaff.email}`;
-
-            // Set semester info
-            document.getElementById('semesterInfo').innerHTML = 
-                `📅 <strong>Current Semester:</strong> Semester ${currentSemester} (2025/2026 Academic Year)`;
 
             await loadAllData();
         }
@@ -580,7 +548,7 @@
                 allCourses = courses || [];
 
                 const { data: students } = await supabase.from('students').select('*');
-                allStudents = students || [];
+                allStudentsData = students || [];
 
                 const { data: results } = await supabase.from('results').select('*');
                 allResults = results || [];
@@ -588,9 +556,23 @@
                 const { data: programmes } = await supabase.from('programmes').select('*');
                 allProgrammes = programmes || [];
 
-                // Smart course assignment: Match courses by staff name or role
-                identifyStaffCourses();
+                // Get courses assigned to this staff from staff_course_assignments
+                const { data: assignments } = await supabase
+                    .from('staff_course_assignments')
+                    .select('course_id')
+                    .eq('staff_id', currentStaff.id)
+                    .eq('is_active', true);
+
+                if (assignments && assignments.length > 0) {
+                    const assignedCourseIds = assignments.map(a => a.course_id);
+                    staffCourses = allCourses.filter(c => assignedCourseIds.includes(c.id));
+                } else {
+                    // Fallback: if no assignments, show first 12 courses
+                    staffCourses = allCourses.slice(0, 12);
+                }
+
                 populateCourseDropdown();
+                populateProgrammeFilter();
                 displayCourses();
                 displayAllStudents();
             } catch (error) {
@@ -598,15 +580,9 @@
             }
         }
 
-        function identifyStaffCourses() {
-            // Get all courses (simplified - assumes staff teaches from first 10 courses)
-            // In production, use a staff_courses assignment table
-            staffCourses = allCourses.slice(0, 12);
-        }
-
         function populateCourseDropdown() {
             const select = document.getElementById('courseSelect');
-            select.innerHTML = '<option value="">-- Select Your Course --</option>';
+            select.innerHTML = '<option value="">-- Select Course --</option>';
 
             if (staffCourses.length === 0) {
                 select.innerHTML += '<option disabled>No courses assigned</option>';
@@ -615,6 +591,15 @@
 
             staffCourses.forEach(course => {
                 select.innerHTML += `<option value="${course.id}">${course.code} - ${course.title}</option>`;
+            });
+        }
+
+        function populateProgrammeFilter() {
+            const select = document.getElementById('programmeFilter');
+            select.innerHTML = '<option value="">All Programmes</option>';
+
+            allProgrammes.forEach(prog => {
+                select.innerHTML += `<option value="${prog.id}">${prog.code}</option>`;
             });
         }
 
@@ -631,7 +616,7 @@
                 const programmes = allProgrammes.filter(p => p.id === course.programme_id);
                 const programmeName = programmes.length > 0 ? programmes[0].code : 'N/A';
                 
-                const students = allStudents.filter(s => s.programme_id === course.programme_id);
+                const students = allStudentsData.filter(s => s.programme_id === course.programme_id);
                 const results = allResults.filter(r => r.course_id === course.id);
 
                 grid.innerHTML += `
@@ -651,9 +636,8 @@
             const container = document.getElementById('studentsContainer');
             const uniqueStudents = new Map();
 
-            // Get all students taking any of staff's courses
             staffCourses.forEach(course => {
-                allStudents.forEach(student => {
+                allStudentsData.forEach(student => {
                     if (student.programme_id === course.programme_id) {
                         uniqueStudents.set(student.id, student);
                     }
@@ -687,6 +671,9 @@
 
         function loadStudentsForCourse() {
             const courseId = document.getElementById('courseSelect').value;
+            const programmeFilter = document.getElementById('programmeFilter').value;
+            const yearFilter = document.getElementById('yearFilter').value;
+            const semesterId = document.getElementById('semesterSelect').value;
 
             if (!courseId) {
                 document.getElementById('resultsContainer').innerHTML = 
@@ -695,32 +682,38 @@
             }
 
             const course = allCourses.find(c => c.id === parseInt(courseId));
-            const courseProgram = allProgrammes.find(p => p.id === course.programme_id);
+            let courseStudents = allStudentsData.filter(s => s.programme_id === course.programme_id);
 
-            // Get all students from this programme (and other programmes if they take same course code)
-            const courseStudents = allStudents.filter(s => s.programme_id === course.programme_id);
+            // Apply filters
+            if (programmeFilter) {
+                courseStudents = courseStudents.filter(s => s.programme_id === parseInt(programmeFilter));
+            }
+
+            if (yearFilter) {
+                courseStudents = courseStudents.filter(s => s.year_of_study === parseInt(yearFilter));
+            }
 
             if (courseStudents.length === 0) {
                 document.getElementById('resultsContainer').innerHTML = 
-                    '<p class="empty-state">No students enrolled in this course</p>';
+                    '<p class="empty-state">No students match the selected filters</p>';
                 return;
             }
 
-            // Build course header
+            const courseProgram = allProgrammes.find(p => p.id === course.programme_id);
+
             let html = `
                 <div class="course-header">
                     <h3>${course.code} - ${course.title}</h3>
                     <p>📚 Programme: <strong>${courseProgram ? courseProgram.code : 'N/A'}</strong></p>
                     <p>👥 Students: <strong>${courseStudents.length}</strong></p>
-                    <p>📅 Semester: <strong>${currentSemester}</strong> | 💳 Credits: <strong>${course.credit_units}</strong></p>
+                    <p>📅 Semester: <strong>${semesterId}</strong> | 💳 Credits: <strong>${course.credit_units}</strong></p>
                 </div>
             `;
 
-            // Build results table with ready-to-enter fields
             html += `
                 <table class="results-table">
                     <thead>
-                        <tr style="background: #1b5e20; color: white;">
+                        <tr>
                             <th style="text-align: left;">Reg No</th>
                             <th style="text-align: left;">Student Name</th>
                             <th>CAT (30%)</th>
@@ -736,7 +729,7 @@
                 const existingResult = allResults.find(r => 
                     r.student_id === student.id && 
                     r.course_id === course.id &&
-                    r.semester_id === currentSemester
+                    r.semester_id === parseInt(semesterId)
                 );
 
                 const cat = existingResult?.cat_marks || '';
@@ -754,11 +747,12 @@
                                 type="number" 
                                 min="0" 
                                 max="30" 
+                                step="0.5"
                                 class="input-field"
                                 value="${cat}"
                                 placeholder="0-30"
-                                onchange="autoSaveResult(event, ${student.id}, ${course.id}, ${currentSemester}, ${resultId})"
-                                onblur="autoSaveResult(event, ${student.id}, ${course.id}, ${currentSemester}, ${resultId})"
+                                onchange="autoSaveResult(event, ${student.id}, ${course.id}, ${semesterId}, ${resultId})"
+                                onblur="autoSaveResult(event, ${student.id}, ${course.id}, ${semesterId}, ${resultId})"
                             />
                         </td>
                         <td>
@@ -766,11 +760,12 @@
                                 type="number" 
                                 min="0" 
                                 max="70" 
+                                step="0.5"
                                 class="input-field"
                                 value="${exam}"
                                 placeholder="0-70"
-                                onchange="autoSaveResult(event, ${student.id}, ${course.id}, ${currentSemester}, ${resultId})"
-                                onblur="autoSaveResult(event, ${student.id}, ${course.id}, ${currentSemester}, ${resultId})"
+                                onchange="autoSaveResult(event, ${student.id}, ${course.id}, ${semesterId}, ${resultId})"
+                                onblur="autoSaveResult(event, ${student.id}, ${course.id}, ${semesterId}, ${resultId})"
                             />
                         </td>
                         <td class="total-column">${total > 0 ? total.toFixed(1) : '-'}</td>
@@ -785,8 +780,8 @@
                     </tbody>
                 </table>
                 <div style="margin-top: 20px; padding: 15px; background: #f0f8f0; border-radius: 6px; color: #1b5e20; font-size: 13px; border-left: 4px solid #2e7d32;">
-                    💡 <strong>How it works:</strong> The CAT and Exam fields are ready for you to enter marks. 
-                    Total (CAT + EXAM) and Grade calculate automatically. Results save when you click outside each field.
+                    💡 <strong>How it works:</strong> Enter CAT (0-30) and EXAM (0-70) marks. 
+                    Total and grade calculate automatically and save when you click outside each field.
                 </div>
             `;
 
@@ -801,12 +796,10 @@
             const cat = parseFloat(catInput.value) || 0;
             const exam = parseFloat(examInput.value) || 0;
 
-            // If both are empty, don't save
             if (catInput.value === '' && examInput.value === '') {
                 return;
             }
 
-            // Validate
             if (cat < 0 || cat > 30 || exam < 0 || exam > 70) {
                 alert('❌ CAT must be 0-30 and Exam must be 0-70');
                 return;
@@ -814,7 +807,6 @@
 
             const total = cat + exam;
 
-            // Calculate grade
             let letterGrade = 'F';
             let gpaPoints = 0;
 
@@ -828,7 +820,6 @@
 
             try {
                 if (resultId) {
-                    // Update
                     const { error } = await supabase
                         .from('results')
                         .update({
@@ -836,13 +827,13 @@
                             exam_marks: exam,
                             marks: total,
                             letter_grade: letterGrade,
-                            gpa_points: gpaPoints
+                            gpa_points: gpaPoints,
+                            updated_at: new Date().toISOString()
                         })
                         .eq('id', resultId);
 
                     if (error) throw error;
                 } else {
-                    // Insert
                     const { error } = await supabase.from('results').insert([{
                         student_id: studentId,
                         course_id: courseId,
@@ -852,7 +843,7 @@
                         letter_grade: letterGrade,
                         gpa_points: gpaPoints,
                         semester_id: semesterId,
-                        assigned_staff_id: currentStaff.id,
+                        entered_by: currentStaff.id,
                         is_published: false
                     }]);
 
@@ -862,8 +853,7 @@
                 showSuccessToast();
                 setTimeout(() => {
                     loadAllData().then(() => {
-                        const courseSelect = document.getElementById('courseSelect');
-                        if (courseSelect.value) {
+                        if (document.getElementById('courseSelect').value) {
                             loadStudentsForCourse();
                         }
                     });
