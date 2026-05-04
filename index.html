@@ -130,40 +130,6 @@
             font-weight: 600;
         }
 
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .tab-btn {
-            background: transparent;
-            border: none;
-            padding: 12px 20px;
-            cursor: pointer;
-            font-weight: 600;
-            color: #666;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .tab-btn.active {
-            color: #2e7d32;
-            border-bottom-color: #2e7d32;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
         .card {
             background: white;
             border-radius: 8px;
@@ -196,6 +162,7 @@
             font-weight: 600;
             margin-bottom: 8px;
             font-size: 14px;
+            color: #333;
         }
 
         .filter-group select {
@@ -203,6 +170,8 @@
             border: 2px solid #ddd;
             border-radius: 6px;
             font-size: 14px;
+            background: white;
+            cursor: pointer;
         }
 
         .filter-group select:focus {
@@ -225,7 +194,6 @@
             border-collapse: collapse;
             margin-top: 15px;
             font-size: 13px;
-            overflow-x: auto;
         }
 
         .results-table thead {
@@ -269,6 +237,18 @@
             border-color: #1b5e20;
             background: #f0f8f0;
             box-shadow: 0 0 5px rgba(46, 125, 50, 0.3);
+        }
+
+        .input-field:disabled {
+            background: #e8e8e8;
+            border-color: #999;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .input-field.error {
+            border-color: #c33;
+            background: #ffe8e8;
         }
 
         .input-field::placeholder {
@@ -332,6 +312,24 @@
             display: block;
         }
 
+        .error-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        .error-toast.show {
+            display: block;
+        }
+
         @keyframes slideIn {
             from {
                 transform: translateX(400px);
@@ -341,6 +339,52 @@
                 transform: translateX(0);
                 opacity: 1;
             }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .submit-btn {
+            background: #1b5e20;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .submit-btn:hover {
+            background: #155a1f;
+        }
+
+        .submit-btn:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .status-draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-published {
+            background: #d4edda;
+            color: #155724;
         }
 
         .empty-state {
@@ -396,7 +440,7 @@
     <div class="dashboard" id="dashboard">
         <div class="header">
             <div>
-                <h1>Staff Portal</h1>
+                <h1>Staff Portal - Results Entry</h1>
                 <p id="staffInfo" style="color: #666; font-size: 12px; margin-top: 5px;"></p>
             </div>
             <div>
@@ -405,77 +449,54 @@
             </div>
         </div>
 
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('results')">📊 Enter Results</button>
-            <button class="tab-btn" onclick="switchTab('courses')">📚 My Courses</button>
-            <button class="tab-btn" onclick="switchTab('students')">👥 View Students</button>
-        </div>
+        <div class="card">
+            <h2>Enter Results by Course</h2>
 
-        <!-- RESULTS TAB -->
-        <div id="results" class="tab-content active">
-            <div class="card">
-                <h2>Enter Results by Course</h2>
+            <div class="info-box">
+                📌 <strong>Instructions:</strong> Select programme, year, and semester to filter courses. 
+                Enter CAT (30%) and Exam (70%) marks. Total and grade calculate automatically. 
+                Click outside to save. Once satisfied, click "Submit Results" to lock for approval.
+            </div>
 
-                <div class="info-box">
-                    📌 <strong>Instructions:</strong> Select your course. Filter by programme and year if needed. 
-                    Enter CAT (30%) and Exam (70%) marks. Total and grade calculate automatically and save on blur.
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Filter by Programme</label>
+                    <select id="programmeFilter" onchange="updateCourseDropdown()">
+                        <option value="">All Programmes</option>
+                    </select>
                 </div>
 
-                <div class="filters">
-                    <div class="filter-group">
-                        <label>Select Course</label>
-                        <select id="courseSelect" onchange="loadStudentsForCourse()">
-                            <option value="">-- Select Course --</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label>Filter by Programme</label>
-                        <select id="programmeFilter" onchange="loadStudentsForCourse()">
-                            <option value="">All Programmes</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label>Filter by Year</label>
-                        <select id="yearFilter" onchange="loadStudentsForCourse()">
-                            <option value="">All Years</option>
-                            <option value="1">Year 1</option>
-                            <option value="2">Year 2</option>
-                            <option value="3">Year 3</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label>Semester</label>
-                        <select id="semesterSelect" onchange="loadStudentsForCourse()">
-                            <option value="1">Semester 1</option>
-                            <option value="2" selected>Semester 2</option>
-                        </select>
-                    </div>
+                <div class="filter-group">
+                    <label>Filter by Year</label>
+                    <select id="yearFilter" onchange="updateCourseDropdown()">
+                        <option value="">All Years</option>
+                        <option value="1">Year 1</option>
+                        <option value="2">Year 2</option>
+                        <option value="3">Year 3</option>
+                    </select>
                 </div>
 
-                <div id="resultsContainer">
-                    <p class="empty-state">
-                        Select a course to enter results
-                    </p>
+                <div class="filter-group">
+                    <label>Filter by Semester</label>
+                    <select id="semesterFilter" onchange="updateCourseDropdown()">
+                        <option value="">All Semesters</option>
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Select Course</label>
+                    <select id="courseSelect" onchange="loadStudentsForCourse()">
+                        <option value="">-- Select Course --</option>
+                    </select>
                 </div>
             </div>
-        </div>
 
-        <!-- COURSES TAB -->
-        <div id="courses" class="tab-content">
-            <div class="card">
-                <h2>Your Assigned Courses</h2>
-                <div id="coursesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;"></div>
-            </div>
-        </div>
-
-        <!-- STUDENTS TAB -->
-        <div id="students" class="tab-content">
-            <div class="card">
-                <h2>Students in Your Courses</h2>
-                <div id="studentsContainer"></div>
+            <div id="resultsContainer">
+                <p class="empty-state">
+                    Select filters and a course to enter results
+                </p>
             </div>
         </div>
     </div>
@@ -483,6 +504,11 @@
     <!-- SUCCESS TOAST -->
     <div class="success-toast" id="successToast">
         ✅ Result saved automatically!
+    </div>
+
+    <!-- ERROR TOAST -->
+    <div class="error-toast" id="errorToast">
+        ❌ Error: Check your input values
     </div>
 
     <script>
@@ -496,7 +522,6 @@
         let allResults = [];
         let allProgrammes = [];
         let staffCourses = [];
-        let allStudentsData = [];
 
         async function handleLogin(e) {
             e.preventDefault();
@@ -537,7 +562,7 @@
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('dashboard').classList.add('active');
             document.getElementById('staffDisplayName').textContent = currentStaff.full_name;
-            document.getElementById('staffInfo').textContent = `👤 ${currentStaff.role.toUpperCase()} | ${currentStaff.email}`;
+            document.getElementById('staffInfo').textContent = `👤 LECTURER | ${currentStaff.email}`;
 
             await loadAllData();
         }
@@ -548,7 +573,7 @@
                 allCourses = courses || [];
 
                 const { data: students } = await supabase.from('students').select('*');
-                allStudentsData = students || [];
+                allStudents = students || [];
 
                 const { data: results } = await supabase.from('results').select('*');
                 allResults = results || [];
@@ -556,7 +581,7 @@
                 const { data: programmes } = await supabase.from('programmes').select('*');
                 allProgrammes = programmes || [];
 
-                // Get courses assigned to this staff from staff_course_assignments
+                // Get courses assigned to this staff
                 const { data: assignments } = await supabase
                     .from('staff_course_assignments')
                     .select('course_id')
@@ -567,31 +592,14 @@
                     const assignedCourseIds = assignments.map(a => a.course_id);
                     staffCourses = allCourses.filter(c => assignedCourseIds.includes(c.id));
                 } else {
-                    // Fallback: if no assignments, show first 12 courses
-                    staffCourses = allCourses.slice(0, 12);
+                    staffCourses = [];
                 }
 
-                populateCourseDropdown();
                 populateProgrammeFilter();
-                displayCourses();
-                displayAllStudents();
+                updateCourseDropdown();
             } catch (error) {
                 console.error('Error loading data:', error);
             }
-        }
-
-        function populateCourseDropdown() {
-            const select = document.getElementById('courseSelect');
-            select.innerHTML = '<option value="">-- Select Course --</option>';
-
-            if (staffCourses.length === 0) {
-                select.innerHTML += '<option disabled>No courses assigned</option>';
-                return;
-            }
-
-            staffCourses.forEach(course => {
-                select.innerHTML += `<option value="${course.id}">${course.code} - ${course.title}</option>`;
-            });
         }
 
         function populateProgrammeFilter() {
@@ -603,77 +611,45 @@
             });
         }
 
-        function displayCourses() {
-            const grid = document.getElementById('coursesGrid');
-            grid.innerHTML = '';
+        function updateCourseDropdown() {
+            const programmeId = document.getElementById('programmeFilter').value;
+            const year = document.getElementById('yearFilter').value;
+            const semester = document.getElementById('semesterFilter').value;
 
-            if (staffCourses.length === 0) {
-                grid.innerHTML = '<p style="color: #999;">No courses assigned to you</p>';
+            const select = document.getElementById('courseSelect');
+            select.innerHTML = '<option value="">-- Select Course --</option>';
+
+            let filteredCourses = staffCourses;
+
+            // Filter by programme
+            if (programmeId) {
+                filteredCourses = filteredCourses.filter(c => c.programme_id === parseInt(programmeId));
+            }
+
+            // Filter by year
+            if (year) {
+                filteredCourses = filteredCourses.filter(c => c.year_level === parseInt(year));
+            }
+
+            // Filter by semester
+            if (semester) {
+                filteredCourses = filteredCourses.filter(c => c.semester_no === parseInt(semester));
+            }
+
+            if (filteredCourses.length === 0) {
+                select.innerHTML += '<option disabled>No courses match filters</option>';
+                document.getElementById('resultsContainer').innerHTML = 
+                    '<p class="empty-state">No courses found for selected filters</p>';
                 return;
             }
 
-            staffCourses.forEach(course => {
-                const programmes = allProgrammes.filter(p => p.id === course.programme_id);
-                const programmeName = programmes.length > 0 ? programmes[0].code : 'N/A';
-                
-                const students = allStudentsData.filter(s => s.programme_id === course.programme_id);
-                const results = allResults.filter(r => r.course_id === course.id);
-
-                grid.innerHTML += `
-                    <div style="background: linear-gradient(135deg, #f0f8f0 0%, #e8f5e9 100%); border-left: 5px solid #2e7d32; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <h3 style="color: #1b5e20; margin-bottom: 8px;">${course.code}</h3>
-                        <p style="color: #666; font-size: 13px; margin-bottom: 3px;">${course.title}</p>
-                        <p style="color: #999; font-size: 12px; margin-bottom: 10px;">📚 ${programmeName}</p>
-                        <p style="font-size: 12px; color: #1b5e20;">
-                            👥 ${students.length} students | 📊 ${results.length} results
-                        </p>
-                    </div>
-                `;
+            filteredCourses.forEach(course => {
+                select.innerHTML += `<option value="${course.id}">${course.code} - ${course.title}</option>`;
             });
-        }
-
-        function displayAllStudents() {
-            const container = document.getElementById('studentsContainer');
-            const uniqueStudents = new Map();
-
-            staffCourses.forEach(course => {
-                allStudentsData.forEach(student => {
-                    if (student.programme_id === course.programme_id) {
-                        uniqueStudents.set(student.id, student);
-                    }
-                });
-            });
-
-            const studentList = Array.from(uniqueStudents.values());
-
-            if (studentList.length === 0) {
-                container.innerHTML = '<p style="color: #999;">No students in your courses</p>';
-                return;
-            }
-
-            let html = '<table style="width: 100%; border-collapse: collapse;"><thead><tr style="background: #f5f5f5;"><th style="padding: 10px; text-align: left; border-bottom: 2px solid #2e7d32;">Reg No</th><th style="padding: 10px; text-align: left; border-bottom: 2px solid #2e7d32;">Name</th><th style="padding: 10px; text-align: left; border-bottom: 2px solid #2e7d32;">Programme</th><th style="padding: 10px; text-align: left; border-bottom: 2px solid #2e7d32;">Year</th></tr></thead><tbody>';
-
-            studentList.forEach(student => {
-                const prog = allProgrammes.find(p => p.id === student.programme_id);
-                html += `
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 10px;">${student.reg_no}</td>
-                        <td style="padding: 10px;">${student.full_name}</td>
-                        <td style="padding: 10px;">${prog ? prog.code : 'N/A'}</td>
-                        <td style="padding: 10px;">Year ${student.year_of_study}</td>
-                    </tr>
-                `;
-            });
-
-            html += '</tbody></table>';
-            container.innerHTML = html;
         }
 
         function loadStudentsForCourse() {
             const courseId = document.getElementById('courseSelect').value;
-            const programmeFilter = document.getElementById('programmeFilter').value;
-            const yearFilter = document.getElementById('yearFilter').value;
-            const semesterId = document.getElementById('semesterSelect').value;
 
             if (!courseId) {
                 document.getElementById('resultsContainer').innerHTML = 
@@ -682,31 +658,22 @@
             }
 
             const course = allCourses.find(c => c.id === parseInt(courseId));
-            let courseStudents = allStudentsData.filter(s => s.programme_id === course.programme_id);
+            const courseProgram = allProgrammes.find(p => p.id === course.programme_id);
 
-            // Apply filters
-            if (programmeFilter) {
-                courseStudents = courseStudents.filter(s => s.programme_id === parseInt(programmeFilter));
-            }
-
-            if (yearFilter) {
-                courseStudents = courseStudents.filter(s => s.year_of_study === parseInt(yearFilter));
-            }
+            let courseStudents = allStudents.filter(s => s.programme_id === course.programme_id);
 
             if (courseStudents.length === 0) {
                 document.getElementById('resultsContainer').innerHTML = 
-                    '<p class="empty-state">No students match the selected filters</p>';
+                    '<p class="empty-state">No students enrolled in this course</p>';
                 return;
             }
-
-            const courseProgram = allProgrammes.find(p => p.id === course.programme_id);
 
             let html = `
                 <div class="course-header">
                     <h3>${course.code} - ${course.title}</h3>
                     <p>📚 Programme: <strong>${courseProgram ? courseProgram.code : 'N/A'}</strong></p>
                     <p>👥 Students: <strong>${courseStudents.length}</strong></p>
-                    <p>📅 Semester: <strong>${semesterId}</strong> | 💳 Credits: <strong>${course.credit_units}</strong></p>
+                    <p>📅 Credits: <strong>${course.credit_units}</strong></p>
                 </div>
             `;
 
@@ -720,6 +687,7 @@
                             <th>Exam (70%)</th>
                             <th class="total-column">Total</th>
                             <th>Grade</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -728,8 +696,7 @@
             courseStudents.forEach(student => {
                 const existingResult = allResults.find(r => 
                     r.student_id === student.id && 
-                    r.course_id === course.id &&
-                    r.semester_id === parseInt(semesterId)
+                    r.course_id === course.id
                 );
 
                 const cat = existingResult?.cat_marks || '';
@@ -737,6 +704,7 @@
                 const total = (parseFloat(cat) || 0) + (parseFloat(exam) || 0);
                 const grade = existingResult?.letter_grade || '-';
                 const resultId = existingResult?.id || null;
+                const isPublished = existingResult?.is_published || false;
 
                 html += `
                     <tr>
@@ -751,8 +719,8 @@
                                 class="input-field"
                                 value="${cat}"
                                 placeholder="0-30"
-                                onchange="autoSaveResult(event, ${student.id}, ${course.id}, ${semesterId}, ${resultId})"
-                                onblur="autoSaveResult(event, ${student.id}, ${course.id}, ${semesterId}, ${resultId})"
+                                ${isPublished ? 'disabled' : ''}
+                                onblur="validateAndSave(event, ${student.id}, ${course.id}, ${resultId})"
                             />
                         </td>
                         <td>
@@ -764,13 +732,16 @@
                                 class="input-field"
                                 value="${exam}"
                                 placeholder="0-70"
-                                onchange="autoSaveResult(event, ${student.id}, ${course.id}, ${semesterId}, ${resultId})"
-                                onblur="autoSaveResult(event, ${student.id}, ${course.id}, ${semesterId}, ${resultId})"
+                                ${isPublished ? 'disabled' : ''}
+                                onblur="validateAndSave(event, ${student.id}, ${course.id}, ${resultId})"
                             />
                         </td>
-                        <td class="total-column">${total > 0 ? total.toFixed(1) : '-'}</td>
+                        <td class="total-column" data-total="${total}">${total > 0 ? total.toFixed(1) : '-'}</td>
                         <td>
                             <span class="grade-badge grade-${getGradeClass(grade)}">${grade}</span>
+                        </td>
+                        <td>
+                            ${isPublished ? '<span class="status-badge status-published">Published</span>' : '<span class="status-badge status-draft">Draft</span>'}
                         </td>
                     </tr>
                 `;
@@ -779,34 +750,63 @@
             html += `
                     </tbody>
                 </table>
+            `;
+
+            html += `
+                <div class="button-group">
+                    <button class="submit-btn" onclick="submitAllResults(${courseId})">
+                        ✅ Submit Results for Approval
+                    </button>
+                </div>
+
                 <div style="margin-top: 20px; padding: 15px; background: #f0f8f0; border-radius: 6px; color: #1b5e20; font-size: 13px; border-left: 4px solid #2e7d32;">
-                    💡 <strong>How it works:</strong> Enter CAT (0-30) and EXAM (0-70) marks. 
-                    Total and grade calculate automatically and save when you click outside each field.
+                    <strong>⚠️ Important:</strong> 
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>CAT must be between 0-30</li>
+                        <li>Exam must be between 0-70</li>
+                        <li>Total and Grade calculate automatically</li>
+                        <li>Once submitted, results are locked and cannot be changed without admin approval</li>
+                    </ul>
                 </div>
             `;
 
             document.getElementById('resultsContainer').innerHTML = html;
         }
 
-        async function autoSaveResult(event, studentId, courseId, semesterId, resultId) {
+        function validateAndSave(event, studentId, courseId, resultId) {
             const row = event.target.closest('tr');
             const catInput = row.querySelector('input:nth-of-type(1)');
             const examInput = row.querySelector('input:nth-of-type(2)');
+            const totalCell = row.querySelector('[data-total]');
 
             const cat = parseFloat(catInput.value) || 0;
             const exam = parseFloat(examInput.value) || 0;
 
-            if (catInput.value === '' && examInput.value === '') {
+            // Validate
+            if (catInput.value !== '' && (cat < 0 || cat > 30)) {
+                catInput.classList.add('error');
+                showErrorToast();
                 return;
+            } else {
+                catInput.classList.remove('error');
             }
 
-            if (cat < 0 || cat > 30 || exam < 0 || exam > 70) {
-                alert('❌ CAT must be 0-30 and Exam must be 0-70');
+            if (examInput.value !== '' && (exam < 0 || exam > 70)) {
+                examInput.classList.add('error');
+                showErrorToast();
+                return;
+            } else {
+                examInput.classList.remove('error');
+            }
+
+            // If both empty, don't save
+            if (catInput.value === '' && examInput.value === '') {
                 return;
             }
 
             const total = cat + exam;
 
+            // Calculate grade
             let letterGrade = 'F';
             let gpaPoints = 0;
 
@@ -818,6 +818,20 @@
             else if (total >= 55) { letterGrade = 'D+'; gpaPoints = 2.5; }
             else if (total >= 50) { letterGrade = 'D'; gpaPoints = 2.0; }
 
+            // Update total display
+            totalCell.textContent = total.toFixed(1);
+            totalCell.setAttribute('data-total', total);
+
+            // Update grade display
+            const gradeCell = row.querySelector('.grade-badge');
+            gradeCell.className = `grade-badge grade-${getGradeClass(letterGrade)}`;
+            gradeCell.textContent = letterGrade;
+
+            // Save to database
+            saveResult(studentId, courseId, cat, exam, total, letterGrade, gpaPoints, resultId);
+        }
+
+        async function saveResult(studentId, courseId, cat, exam, total, letterGrade, gpaPoints, resultId) {
             try {
                 if (resultId) {
                     const { error } = await supabase
@@ -842,7 +856,7 @@
                         marks: total,
                         letter_grade: letterGrade,
                         gpa_points: gpaPoints,
-                        semester_id: semesterId,
+                        semester_id: 2,
                         entered_by: currentStaff.id,
                         is_published: false
                     }]);
@@ -851,15 +865,47 @@
                 }
 
                 showSuccessToast();
-                setTimeout(() => {
-                    loadAllData().then(() => {
-                        if (document.getElementById('courseSelect').value) {
-                            loadStudentsForCourse();
-                        }
-                    });
-                }, 500);
             } catch (error) {
-                alert('❌ Error saving result: ' + error.message);
+                console.error('Error saving result:', error);
+                showErrorToast();
+            }
+        }
+
+        async function submitAllResults(courseId) {
+            const course = allCourses.find(c => c.id === courseId);
+            const courseProgram = allProgrammes.find(p => p.id === course.programme_id);
+            const courseStudents = allStudents.filter(s => s.programme_id === course.programme_id);
+
+            if (!confirm(`Lock and submit results for ${course.code} - ${course.title}? This cannot be undone without admin approval.`)) {
+                return;
+            }
+
+            try {
+                // Get all results for this course that are not yet published
+                const { data: courseResults } = await supabase
+                    .from('results')
+                    .select('id')
+                    .eq('course_id', courseId)
+                    .eq('is_published', false);
+
+                if (courseResults && courseResults.length > 0) {
+                    // Publish all
+                    const { error } = await supabase
+                        .from('results')
+                        .update({ is_published: true })
+                        .eq('course_id', courseId)
+                        .eq('is_published', false);
+
+                    if (error) throw error;
+
+                    alert(`✅ Results submitted for approval! ${courseResults.length} results are now locked.`);
+                    
+                    // Reload
+                    await loadAllData();
+                    loadStudentsForCourse();
+                }
+            } catch (error) {
+                alert('❌ Error submitting results: ' + error.message);
             }
         }
 
@@ -880,12 +926,12 @@
             }, 2000);
         }
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+        function showErrorToast() {
+            const toast = document.getElementById('errorToast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
 
         function logout() {
